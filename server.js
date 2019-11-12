@@ -2,6 +2,10 @@ const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
 
+app.get("/", function(req, res) {
+  res.send("Hi");
+});
+
 // EXAMPLE: get request handler
 app.get("/api/route/:routeid", function(req, res) {
   // Get the correct data and stuff
@@ -33,4 +37,4 @@ app.get("/api/pvta/:routeid", function(req, res) {
     });
 });
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
