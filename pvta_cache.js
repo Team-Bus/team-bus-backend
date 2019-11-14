@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-class PVTACache {
+module.exports = class PVTACache {
   constructor(updateInterval = 180000) {
     this.updateInterval = updateInterval;
     this.lastUpdate = 0;
@@ -16,16 +16,34 @@ class PVTACache {
     return this.routes[routeId];
   }
 
+  async getRoutes() {
+    await this.updateCache();
+
+    return this.routes;
+  }
+
   async getBus(busId) {
     await this.updateCache();
 
     return this.vehicles[busId];
   }
 
+  async getBuses(busId) {
+    await this.updateCache();
+
+    return this.vehicles;
+  }
+
   async getStop(stopId) {
     await this.updateCache();
 
     return this.stops[stopId];
+  }
+
+  async getStops(stopId) {
+    await this.updateCache();
+
+    return this.stops;
   }
 
   // TODO: Handle errors for failed pvta fetch request
@@ -59,4 +77,4 @@ class PVTACache {
 
     this.lastUpdate = Date.now();
   }
-}
+};

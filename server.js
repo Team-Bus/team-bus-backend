@@ -11,20 +11,62 @@ const googleMapsClient = require("@google/maps").createClient({
 
 const PORT = process.env.PORT || 3000;
 
+const PVTACache = require("./pvta_cache.js");
+
+let pvta_cache = new PVTACache();
+
 // --- Express Routes ---
 
 app.get("/", (req, res) => {
   res.send("Hi");
 });
 
-app.get("/api/route/", (req, res) => {});
-app.get("/api/route/:route_id", (req, res) => {});
+app.get("/api/route/", (req, res) => {
+  pvta_cache.getRoutes().then(routes => {
+    res.send({
+      routes: routes || null
+    });
+  });
+});
 
-app.get("/api/bus/", (req, res) => {});
-app.get("/api/bus/:bus_id", (req, res) => {});
+app.get("/api/route/:route_id", (req, res) => {
+  pvta_cache.getRoute(req.params.route_id).then(route => {
+    res.send({
+      route: route || null
+    });
+  });
+});
 
-app.get("/api/stop/", (req, res) => {});
-app.get("/api/stop/:stop_id", (req, res) => {});
+app.get("/api/bus/", (req, res) => {
+  pvta_cache.getBuses().then(buses => {
+    res.send({
+      buese: buses || null
+    });
+  });
+});
+app.get("/api/bus/:bus_id", (req, res) => {
+  pvta_cache.getBus(req.params.bus_id).then(bus => {
+    res.send({
+      bus: bus || null
+    });
+  });
+});
+
+app.get("/api/stop/", (req, res) => {
+  pvta_cache.getStops().then(stops => {
+    res.send({
+      stops: stops || null
+    });
+  });
+});
+
+app.get("/api/stop/:stop_id", (req, res) => {
+  pvta_cache.getStop(req.params.stop_id).then(stop => {
+    res.send({
+      stop: stop || null
+    });
+  });
+});
 
 /*
  *  Query Variables
