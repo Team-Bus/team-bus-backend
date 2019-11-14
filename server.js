@@ -2,12 +2,15 @@ const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
 
-app.get("/", function(req, res) {
+const dotenv = require('dotenv');
+dotenv.config();
+
+app.get("/", (req, res) => {
   res.send("Hi");
 });
 
-// EXAMPLE: get request handler
-app.get("/api/route/:routeid", function(req, res) {
+// Example request - update/delete this later
+app.get("/api/route/:routeid", (req, res) => {
   // Get the correct data and stuff
 
   // Send a response back
@@ -18,13 +21,10 @@ app.get("/api/route/:routeid", function(req, res) {
 });
 
 // Example fetch - delete this later
-app.get("/api/pvta/:routeid", function(req, res) {
-  fetch(
-    "http://bustracker.pvta.com/InfoPoint/rest/routes/get/" + req.params.routeid
-  )
+app.get("/api/pvta/:routeid", (req, res) => {
+  fetch("http://bustracker.pvta.com/InfoPoint/rest/routes/get/" + req.params.routeid)
     .then(response => {
-      response
-        .json()
+      response.json()
         .then(json => {
           res.send(json);
         })
@@ -37,4 +37,6 @@ app.get("/api/pvta/:routeid", function(req, res) {
     });
 });
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Server listening on port " + (process.env.PORT || 3000));
+});
