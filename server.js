@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 app.get("/api/route/", (req, res) => {
   pvta_cache.getRoutes().then(routes => {
     res.send({
-      routes: routes || null
+      Routes: routes || null
     });
   });
 });
@@ -32,22 +32,22 @@ app.get("/api/route/", (req, res) => {
 app.get("/api/route/:route_id", (req, res) => {
   pvta_cache.getRoute(req.params.route_id).then(route => {
     res.send({
-      route: route || null
+      Route: route || null
     });
   });
 });
 
-app.get("/api/bus/", (req, res) => {
-  pvta_cache.getBuses().then(buses => {
+app.get("/api/vehicle/", (req, res) => {
+  pvta_cache.getVehicles().then(vehicles => {
     res.send({
-      buese: buses || null
+      Vehicles: vehicles || null
     });
   });
 });
-app.get("/api/bus/:bus_id", (req, res) => {
-  pvta_cache.getBus(req.params.bus_id).then(bus => {
+app.get("/api/vehicle/:vehicle_id", (req, res) => {
+  pvta_cache.getVehicle(req.params.vehicle_id).then(vehicle => {
     res.send({
-      bus: bus || null
+      Vehicle: vehicle || null
     });
   });
 });
@@ -55,7 +55,7 @@ app.get("/api/bus/:bus_id", (req, res) => {
 app.get("/api/stop/", (req, res) => {
   pvta_cache.getStops().then(stops => {
     res.send({
-      stops: stops || null
+      Stops: stops || null
     });
   });
 });
@@ -63,7 +63,7 @@ app.get("/api/stop/", (req, res) => {
 app.get("/api/stop/:stop_id", (req, res) => {
   pvta_cache.getStop(req.params.stop_id).then(stop => {
     res.send({
-      stop: stop || null
+      Stop: stop || null
     });
   });
 });
