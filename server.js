@@ -2,14 +2,18 @@ const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
 
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-const googleMapsClient = require('@google/maps').createClient({
+const googleMapsClient = require("@google/maps").createClient({
   key: process.env.GOOGLE_DIRECTIONS_API_KEY
 });
 
-const PORT = (process.env.PORT || 3000)
+const PORT = process.env.PORT || 3000;
+
+const PVTACache = require("./pvta_cache.js");
+
+let pvta_cache = new PVTACache();
 
 // --- Express Routes ---
 
@@ -17,62 +21,72 @@ app.get("/", (req, res) => {
   res.send("Hi");
 });
 
-
-/*
- *  Example Express GET request with parameters
- */
-app.get("/api/route/:routeid", (req, res) => {
-  // Get the correct data and stuff
-
-  // Send a response back
-  res.send({
-    hi: "hi",
-    route_id: req.params.routeid
+app.get("/api/route/", (req, res) => {
+  pvta_cache.getRoutes().then(routes => {
+    res.send({
+      routes: routes || null
+    });
   });
 });
 
-
-/*
- *  Example PVTA API request
- */
-app.get("/api/pvta/:routeid", (req, res) => {
-  console.log("/api/pvta/:routeid");
-  console.log(req.params);
-
-  fetch("http://bustracker.pvta.com/InfoPoint/rest/routes/get/" + req.params.routeid)
-    .then(response => {
-      return response.json()
-    })
-    .then(json => {
-      res.send(json)
-    })
-    .catch((err) => {
-      res.sendStatus(500);
-      console.log(err);
+app.get("/api/route/:route_id", (req, res) => {
+  pvta_cache.getRoute(req.params.route_id).then(route => {
+    res.send({
+      route: route || null
     });
-
+  });
 });
 
+app.get("/api/bus/", (req, res) => {
+  pvta_cache.getBuses().then(buses => {
+    res.send({
+      buese: buses || null
+    });
+  });
+});
+app.get("/api/bus/:bus_id", (req, res) => {
+  pvta_cache.getBus(req.params.bus_id).then(bus => {
+    res.send({
+      bus: bus || null
+    });
+  });
+});
+
+app.get("/api/stop/", (req, res) => {
+  pvta_cache.getStops().then(stops => {
+    res.send({
+      stops: stops || null
+    });
+  });
+});
+
+app.get("/api/stop/:stop_id", (req, res) => {
+  pvta_cache.getStop(req.params.stop_id).then(stop => {
+    res.send({
+      stop: stop || null
+    });
+  });
+});
 
 /*
- *  Query Variables  
+ *  Query Variables
  *    from - Current location in string | coordiantes long,lat
  *    to - Destination as string | coordiantes long,lat
  *
  *  Example Request: Lot 12 to Goessman Lab
  *    /api/directions/?from=42.3924322,-72.5362976&to=Goessmann%20Lab
- * 
+ *
  *  Google Maps Directions API
  *    https://developers.google.com/maps/documentation/directions/intro#DirectionsRequests
  */
 
 app.get("/api/directions/", (req, res) => {
-
-  console.log("api/directions/")
+  console.log("api/directions/");
   console.log("From: " + req.query.from);
   console.log("To: " + req.query.to);
 
-  googleMapsClient.directions({
+  googleMapsClient.directions(
+    {
       origin: req.query.from,
       destination: req.query.to,
       traffic_model: "best_guess",
@@ -82,10 +96,8 @@ app.get("/api/directions/", (req, res) => {
       units: "imperial",
       alternatives: true,
       region: "us"
-
     },
     (err, response) => {
-
       // TODO: Correctly handle errors / if route or location wasn't found
       // TODO: Filter out not PVTA routes
       if (err) {
@@ -99,9 +111,8 @@ app.get("/api/directions/", (req, res) => {
       } else {
         res.sendStatus(400);
       }
-
-    });
-
+    }
+  );
 });
 
 // Start server
