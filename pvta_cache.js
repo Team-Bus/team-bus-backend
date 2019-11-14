@@ -22,13 +22,13 @@ module.exports = class PVTACache {
     return this.routes;
   }
 
-  async getBus(busId) {
+  async getVehicle(vehicleId) {
     await this.updateCache();
 
-    return this.vehicles[busId];
+    return this.vehicles[vehicleId];
   }
 
-  async getBuses(busId) {
+  async getVehicles() {
     await this.updateCache();
 
     return this.vehicles;
@@ -40,7 +40,7 @@ module.exports = class PVTACache {
     return this.stops[stopId];
   }
 
-  async getStops(stopId) {
+  async getStops() {
     await this.updateCache();
 
     return this.stops;
