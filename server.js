@@ -5,6 +5,10 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Enable CORS for all origins
+const cors = require("cors");
+app.use(cors());
+
 // Setup Google maps API with the API key in the .env file
 const googleMapsClient = require("@google/maps").createClient({
   key: process.env.GOOGLE_DIRECTIONS_API_KEY
@@ -27,10 +31,8 @@ app.get("/", (req, res) => {
  *  returns all availiable PVTA routes
  */
 app.get("/api/route/", (req, res) => {
-
   // Get all route information from the PVTA cache
   pvta_cache.getRoutes().then(routes => {
-
     // Send the route information, if not exists, send null
     res.send({
       Routes: routes || null
@@ -43,7 +45,6 @@ app.get("/api/route/", (req, res) => {
  *  Example: /api/route/20035  returns information on route 20035
  */
 app.get("/api/route/:route_id", (req, res) => {
-
   // Get the route information for route req.params.route_id from the PVTA cache
   pvta_cache.getRoute(req.params.route_id).then(route => {
     // Send the route information, if not exists, send null
@@ -101,7 +102,8 @@ app.get("/api/directions/", (req, res) => {
   console.log("From: " + req.query.from);
   console.log("To: " + req.query.to);
 
-  googleMapsClient.directions({
+  googleMapsClient.directions(
+    {
       origin: req.query.from,
       destination: req.query.to,
       traffic_model: "best_guess",
