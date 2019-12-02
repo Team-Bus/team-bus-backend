@@ -2,12 +2,13 @@ const fetch = require("node-fetch");
 
 module.exports = class PVTACache {
   constructor(updateInterval = 180000) {
-    this.updateInterval = updateInterval; // minimum time in ms between requests to the PVTA 
+    this.updateInterval = updateInterval; // minimum time in ms between requests to the PVTA
     this.lastUpdate = 0;
 
     this.routes = {};
     this.stops = {};
     this.vehicles = {};
+    this.stopDepartures = {};
   }
 
   async getRoute(routeId) {
@@ -46,9 +47,39 @@ module.exports = class PVTACache {
     return this.stops;
   }
 
+  async getStopDepartures(stopId) {
+    //await this.updateCache();
+    await this.updateStopDeparture(stopId);
+    return this.stopDepartures[stopId];
+  }
+
+  async updateStopDeparture(stopId) {
+    if (this.stopDepartures[stopId] != undefined) {
+      let LastUpdated = this.stopDepartures[stopId].LastUpdated;
+      LastUpdated = LastUpdated.substring(6, LastUpdated.length - 7);
+      LastUpdated = parseInt(LastUpdated);
+
+      console.log(Date.now() - LastUpdated);
+
+      if (Date.now() - LastUpdated < this.updateInterval) {
+        console.log(this.stopDepartures[stopId]);
+        console.log("Already in cache");
+        return;
+      }
+    }
+
+    let response = await fetch(
+      "https://bustracker.pvta.com/InfoPoint/rest/stopdepartures/get/" + stopId
+    );
+    let json = await response.json();
+
+    json.forEach(stop_departure => {
+      this.stopDepartures[stop_departure.StopId] = stop_departure;
+    });
+  }
+
   // TODO: Handle errors for failed pvta fetch request
   async updateCache() {
-
     // If it has been less then updateInterval ms since the last update, do not request new data
     if (Date.now() - this.lastUpdate < this.updateInterval) return;
 
@@ -75,7 +106,6 @@ module.exports = class PVTACache {
       });
 
       route.Vehicles.forEach(vehicle => {
-
         vehicle.Color = route.Color;
         vehicle.RouteShortName = route.ShortName;
         vehicle.IvrDescription = route.IvrDescription;
