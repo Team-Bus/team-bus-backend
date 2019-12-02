@@ -85,6 +85,18 @@ app.get("/api/stop/:stop_id", (req, res) => {
   });
 });
 
+app.get("/api/stop/departures/:stop_id", (req, res) => {
+  console.log("request " + req.params.stop_id);
+  pvta_cache
+    .getStopDepartures(req.params.stop_id)
+    .then(stop_details => {
+      res.send(stop_details);
+    })
+    .catch(e => {
+      console.log(e);
+    });
+});
+
 /*
  *  Query Variables
  *    from - Current location in string | coordiantes long,lat
