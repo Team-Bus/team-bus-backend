@@ -9,6 +9,8 @@ dotenv.config();
 const cors = require("cors");
 app.use(cors());
 
+const fetch = require("node-fetch");
+
 // Setup Google maps API with the API key in the .env file
 const googleMapsClient = require("@google/maps").createClient({
   key: process.env.GOOGLE_DIRECTIONS_API_KEY
@@ -67,6 +69,23 @@ app.get("/api/vehicle/:vehicle_id", (req, res) => {
       Vehicle: vehicle || null
     });
   });
+});
+
+app.get("/api/stop/nearest", async (req, res) => {
+  let lat = req.query.lat;
+  let long = req.query.long;
+
+  let response = await fetch(
+    "https://bustracker.pvta.com/InfoPoint/rest/Stops/NearestStop?latitude=" +
+      lat +
+      "&longitude=" +
+      long
+  );
+  let json = await response.json();
+
+  console.log(json);
+
+  res.send(json);
 });
 
 app.get("/api/stop/", (req, res) => {
