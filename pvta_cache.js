@@ -99,6 +99,23 @@ module.exports = class PVTACache {
     // Go through each route we recevied from the PVTA and add the routes/stops/buses to
     // individual associative arrays (dictionary)
     json.forEach(route => {
+      route.SortedStops = [];
+
+      route.RouteStops.forEach(routeStop => {
+        let stop = route.Stops.find(obj => {
+          return obj.StopId == routeStop.StopId;
+        });
+
+        let sorted_stop = Object.assign({}, routeStop);
+        sorted_stop = Object.assign(sorted_stop, stop);
+
+        route.SortedStops.push(sorted_stop);
+      });
+
+      route.SortedStops.sort((a, b) => {
+        return a.SortOrder - b.SortOrder;
+      });
+
       this.routes[route.RouteId] = route;
 
       route.Stops.forEach(stop => {
