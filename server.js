@@ -71,6 +71,91 @@ app.get("/api/vehicle/:vehicle_id", (req, res) => {
   });
 });
 
+app.get("/api/stop/transfer/", async (req, res) => {
+  let client_responce = { routes: [] };
+
+  let from = await pvta_cache.getStop(req.query.from);
+  let to = await pvta_cache.getStop(req.query.to);
+
+  if (to == undefined || from == undefined) {
+    res.send(client_responce);
+    return;
+  }
+
+  await googleMapsClient.directions(
+    {
+      origin: from.Latitude + "," + from.Longitude,
+      destination: to.Latitude + "," + to.Longitude,
+      traffic_model: "best_guess",
+      departure_time: "now",
+      mode: "transit",
+      transit_mode: "bus",
+      units: "imperial",
+      alternatives: true,
+      region: "us"
+    },
+    (err, response) => {
+      // TODO: Correctly handle errors / if route or location wasn't found
+      // TODO: Filter out not PVTA routes
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      }
+
+      if (response) {
+        // Do not send response as it contains our API keys
+        json = response.json;
+
+        json.routes.forEach(test_route => {
+          route = {
+            duration: test_route.legs[0].duration,
+            arrival_time: test_route.legs[0].arrival_time,
+            departure_time: test_route.legs[0].departure_time,
+            distance: test_route.legs[0].distance,
+            steps: []
+          };
+
+          discard_route = false;
+
+          test_route.legs[0].steps.forEach(step => {
+            if (step.travel_mode == "TRANSIT") {
+              step.transit_details.line.agencies.forEach(agency => {
+                if (agency.name != "PVTA") {
+                  discard_route = true;
+                } else {
+                  client_step = {};
+
+                  client_step.route_name = step.transit_details.line.name;
+                  client_step.route_short_name =
+                    step.transit_details.line.short_name;
+
+                  client_step.departure_stop =
+                    step.transit_details.departure_stop;
+                  client_step.departure_time =
+                    step.transit_details.departure_time;
+
+                  client_step.arrival_stop = step.transit_details.arrival_stop;
+                  client_step.arrival_time = step.transit_details.arrival_time;
+
+                  route.steps.push(client_step);
+                }
+              });
+            }
+          });
+
+          if (!discard_route) {
+            client_responce.routes.push(route);
+          }
+        });
+
+        res.send(client_responce);
+      } else {
+        res.sendStatus(400);
+      }
+    }
+  );
+});
+
 app.get("/api/stop/nearest", async (req, res) => {
   let lat = req.query.lat;
   let long = req.query.long;
