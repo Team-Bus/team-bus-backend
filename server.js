@@ -72,11 +72,15 @@ app.get("/api/vehicle/:vehicle_id", (req, res) => {
 });
 
 app.get("/api/stop/transfer/", async (req, res) => {
+  let client_responce = { routes: [] };
+
   let from = await pvta_cache.getStop(req.query.from);
   let to = await pvta_cache.getStop(req.query.to);
 
-  console.log(from);
-  console.log(to);
+  if (to == undefined || from == undefined) {
+    res.send(client_responce);
+    return;
+  }
 
   await googleMapsClient.directions(
     {
@@ -101,8 +105,6 @@ app.get("/api/stop/transfer/", async (req, res) => {
       if (response) {
         // Do not send response as it contains our API keys
         json = response.json;
-
-        client_responce = { routes: [] };
 
         json.routes.forEach(test_route => {
           route = {
